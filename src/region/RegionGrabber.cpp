@@ -8,9 +8,12 @@
 #include <QScreen>
 #include <QPainter>
 #include "../Utils.h"
+#include "../WindowFinder.h"
 #include <QApplication>
 #include <QtGui/QPainterPath>
 #include <QTimer>
+#include <X11/Xatom.h>
+#include <X11/Xmu/WinUtil.h>
 
 RegionGrabber::RegionGrabber(): QWidget(nullptr, Qt::X11BypassWindowManagerHint | Qt::WindowStaysOnTopHint | Qt::FramelessWindowHint | Qt::Tool) {
     // set transparent
@@ -56,8 +59,40 @@ void RegionGrabber::keyPressEvent(QKeyEvent* event) {
 }
 
 void RegionGrabber::updateSelection(QMouseEvent *event) {
+    if (dragging) {
+        setSelection(new QRect(dragX, dragY, event->x() - dragX, event->y() - dragY));
+    } else {
+        printf("\n");
+        auto disp = XOpenDisplay(nullptr);
 
-    setSelection(new QRect(dragX, dragY, event->x() - dragX, event->y() - dragY));
+        {
+            auto
+        }
+
+        auto windows = WindowFinder::getAllWindowsRecursively(disp);
+
+        if (windows == nullptr) {
+            printf("Couldnt find windows\n");
+            return;
+        }
+
+        for (auto window : *windows) {
+            auto name = WindowFinder::getWindowName(disp, window);
+            if (name != nullptr) {
+                auto attribs = WindowFinder::getWindowAttributes(disp, window);
+                if (attribs == nullptr) {
+                    printf("Window: %lu %s (null attribs)\n", window, name);
+                } else {
+                    printf("Window: %lu %s (xywh: %d, %d, %d, %d)\n", window, name, attribs->x, attribs->y, attribs->width, attribs->height);
+                    XFree(attribs);
+                }
+                XFree(name);
+            }
+        }
+        XFree(windows);
+
+        XCloseDisplay(disp);
+    }
 }
 
 void RegionGrabber::mousePressEvent(QMouseEvent* event) {

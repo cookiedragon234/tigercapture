@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.17)
 project(tigercapture)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -lcurl -pthread")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -lcurl -pthread -lX11")
 
 set(CMAKE_INSTALL_PREFIX /usr/bin)
 
@@ -28,7 +28,7 @@ add_executable(tigercapture
         src/Utils.h
         src/FileUtils.h
         src/json.hpp
-        src/widgets/DragUploadWidget.cpp src/widgets/DragUploadWidget.h)
+        src/widgets/DragUploadWidget.cpp src/widgets/DragUploadWidget.h src/WindowFinder.h)
 install(TARGETS tigercapture DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 target_link_libraries(tigercapture Qt5::Core Qt5::Widgets curl)
